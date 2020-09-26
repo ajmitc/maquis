@@ -37,10 +37,6 @@ public class Controller {
                             PopupUtil.popupNotification(view.getFrame(), "Shoot Milice", "You must have at least one weapon and a milice on the board.");
                         }
                     }
-                    else if (view.getGamePanel().getBoardPanel().inUndoActionArea(e.getX(), e.getY())){
-                        logger.info("Undoing action");
-
-                    }
                 }
 
                 if (view.getGamePanel().getBoardPanel().inRestartActionArea(e.getX(), e.getY())){

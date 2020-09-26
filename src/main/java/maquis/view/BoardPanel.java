@@ -162,10 +162,10 @@ public class BoardPanel extends JPanel {
     private static final int RESTART_ICON_X = 1200 - RESTART_ICON_SIZE;
     private static final int RESTART_ICON_Y = MISSION_AREA_HEIGHT - RESTART_ICON_SIZE;
 
-    private static final int UNDO_ICON_GAP  = 10;
-    private static final int UNDO_ICON_SIZE = 40;
-    private static final int UNDO_ICON_X = 1200 - RESTART_ICON_SIZE - UNDO_ICON_SIZE - UNDO_ICON_GAP;
-    private static final int UNDO_ICON_Y = MISSION_AREA_HEIGHT - UNDO_ICON_SIZE;
+//    private static final int UNDO_ICON_GAP  = 10;
+//    private static final int UNDO_ICON_SIZE = 40;
+//    private static final int UNDO_ICON_X = 1200 - RESTART_ICON_SIZE - UNDO_ICON_SIZE - UNDO_ICON_GAP;
+//    private static final int UNDO_ICON_Y = MISSION_AREA_HEIGHT - UNDO_ICON_SIZE;
 
     private Model model;
     private View view;
@@ -205,10 +205,10 @@ public class BoardPanel extends JPanel {
                 my >= SHOOT_MILICE_COORD.y && my < SHOOT_MILICE_COORD.y + SHOOT_MILICE_SIZE;
     }
 
-    public boolean inUndoActionArea(int mx, int my){
-        return mx >= UNDO_ICON_X && mx < UNDO_ICON_X + UNDO_ICON_SIZE &&
-                my >= UNDO_ICON_Y && my < UNDO_ICON_Y + UNDO_ICON_SIZE;
-    }
+//    public boolean inUndoActionArea(int mx, int my){
+//        return mx >= UNDO_ICON_X && mx < UNDO_ICON_X + UNDO_ICON_SIZE &&
+//                my >= UNDO_ICON_Y && my < UNDO_ICON_Y + UNDO_ICON_SIZE;
+//    }
 
     public boolean inRestartActionArea(int mx, int my){
         return mx >= RESTART_ICON_X && mx < RESTART_ICON_X + RESTART_ICON_SIZE &&
@@ -247,7 +247,7 @@ public class BoardPanel extends JPanel {
 
         // Draw restart and undo icons
         drawRestartIcon(g2d);
-        drawUndoIcon(g2d);
+        //drawUndoIcon(g2d);
 
         // Draw Spare Rooms
         drawSpareRooms(g2d);
@@ -447,9 +447,9 @@ public class BoardPanel extends JPanel {
         g.drawImage(ImageUtil.load("restart-icon.png", RESTART_ICON_SIZE), RESTART_ICON_X, RESTART_ICON_Y, null);
     }
 
-    private void drawUndoIcon(Graphics2D g){
-        g.drawImage(ImageUtil.load("undo-icon.png", UNDO_ICON_SIZE), UNDO_ICON_X, UNDO_ICON_Y, null);
-    }
+//    private void drawUndoIcon(Graphics2D g){
+//        g.drawImage(ImageUtil.load("undo-icon.png", UNDO_ICON_SIZE), UNDO_ICON_X, UNDO_ICON_Y, null);
+//    }
 
     public void refresh(){
         repaint();
