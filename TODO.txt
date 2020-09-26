@@ -1,0 +1,11 @@
+BUGS
+- Double Agent Mission: checkbox text update with Dark Lady location incorrect
+- Infiltration Mission: agent returns to safe house instead of staying on mission
+- Mission names are not centered
+
+FEATURES
+- If Assassination Mission in play, give player option to shoot milice at end of every turn
+- Replace spare room images with better images
+- Replace road blocks with image
+- Replace blocked locations with nicer image
+- Undo Action

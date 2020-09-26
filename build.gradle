@@ -1,0 +1,11 @@
+apply plugin: 'java'
+
+jar {
+    manifest{
+            attributes(
+                    "Implementation-Title": "Maquis",
+                    "Implementation-Version": "1.0.0",
+                    "Main-Class": "maquis.Main"
+            )
+    }
+}
