@@ -25,7 +25,8 @@ public class MiliceParadeDayMission extends Mission{
     public void turnSetup() {
         super.turnSetup();
         Road road = game.getBoard().getRoad(LocationType.RUE_BARADAT, LocationType.FENCE);
-        road.setBlocked(PARADE_DAYS.contains(game.getTurn()));
+        road.setBlocked(PARADE_DAYS.contains(game.getTurn()) && !completed);
+        road.setParade(road.isBlocked());
     }
 
     @Override
@@ -33,6 +34,7 @@ public class MiliceParadeDayMission extends Mission{
         super.turnTeardown();
         Road road = game.getBoard().getRoad(LocationType.RUE_BARADAT, LocationType.FENCE);
         road.setBlocked(false);
+        road.setParade(road.isBlocked());
     }
 
     @Override

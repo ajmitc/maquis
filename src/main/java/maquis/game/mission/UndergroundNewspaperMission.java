@@ -2,6 +2,7 @@ package maquis.game.mission;
 
 import maquis.game.Game;
 import maquis.game.LocationType;
+import maquis.game.MissionLocation;
 import maquis.game.Resource;
 import maquis.view.PopupUtil;
 
@@ -32,7 +33,8 @@ public class UndergroundNewspaperMission extends Mission{
     public void visitLocation(LocationType locationType) {
         super.visitLocation(locationType);
         if (completed) return;
-        if  (!intelDeliveries.contains(game.getTurn()) && game.hasResources(Resource.INTEL, 2)){
+        MissionLocation missionLocation = (MissionLocation) game.getBoard().getLocationWithMission(this);
+        if  (locationType == missionLocation.getType() && !intelDeliveries.contains(game.getTurn()) && game.hasResources(Resource.INTEL, 2)){
             game.discardResources(Resource.INTEL, 2);
             intelDeliveries.add(game.getTurn());
             completed = intelDeliveries.size() >= 3;

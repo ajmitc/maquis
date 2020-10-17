@@ -6,11 +6,13 @@ public class Road {
 
     // Some missions block of roads (ie. Milice Parade Day)
     private boolean blocked;
+    private boolean parade;
 
     public Road(Location location1, Location location2){
         this.location1 = location1;
         this.location2 = location2;
         this.blocked   = false;
+        this.parade    = false;
     }
 
     public Location getLocation1() {
@@ -35,5 +37,13 @@ public class Road {
 
     public void setBlocked(boolean blocked) {
         this.blocked = blocked;
+    }
+
+    public boolean isParade() {
+        return parade;
+    }
+
+    public void setParade(boolean parade) {
+        this.parade = parade;
     }
 }

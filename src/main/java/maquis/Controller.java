@@ -1,6 +1,7 @@
 package maquis;
 
 import maquis.game.*;
+import maquis.game.mission.AssassinationMission;
 import maquis.view.BoardPanel;
 import maquis.view.PopupUtil;
 import maquis.view.View;
@@ -28,13 +29,18 @@ public class Controller {
                 super.mousePressed(e);
                 if (model.getGame().getPhase() == GamePhase.PERFORM_ACTIONS) {
                     if (view.getGamePanel().getBoardPanel().inShootMiliceActionArea(e.getX(), e.getY())) {
-                        if (model.getGame().getResources().contains(Resource.WEAPONS) &&
-                                model.getGame().getBoard().getLocations().stream().anyMatch(l -> l.hasMilice())) {
-                            model.getGame().setPhase(GamePhase.PERFORM_ACTIONS_SHOOT_MILICE);
-                            logger.info("Set phase to Shoot Milice");
-                            PopupUtil.popupNotification(view.getFrame(), "Shoot Milice", "Select a location with a Milice to shoot it");
-                        } else {
-                            PopupUtil.popupNotification(view.getFrame(), "Shoot Milice", "You must have at least one weapon and a milice on the board.");
+                        if (model.getGame().allowMiliceElimination()) {
+                            if (model.getGame().getResources().contains(Resource.WEAPONS) &&
+                                    model.getGame().getBoard().getLocations().stream().anyMatch(l -> l.hasMilice())) {
+                                model.getGame().setPhase(GamePhase.PERFORM_ACTIONS_SHOOT_MILICE);
+                                logger.info("Set phase to Shoot Milice");
+                                PopupUtil.popupNotification(view.getFrame(), "Shoot Milice", "Select a location with a Milice to shoot it");
+                            } else {
+                                PopupUtil.popupNotification(view.getFrame(), "Shoot Milice", "You must have at least one weapon and a milice on the board.");
+                            }
+                        }
+                        else {
+                            PopupUtil.popupNotification(view.getFrame(), "Shoot Milice", "You cannot eliminate Milice right now (see Mission Details).");
                         }
                     }
                 }
@@ -273,7 +279,7 @@ public class Controller {
                 boolean hasMiliceInRoute = shortestRoute.stream().anyMatch(r -> r.getLocation1().hasMilice() || r.getLocation2().hasMilice());
 
                 // If player has weapon and Milice blocking path, ask if they want to shoot milice, then return
-                if (hasMiliceInRoute && model.getGame().getResources().contains(Resource.WEAPONS)){
+                if (hasMiliceInRoute && model.getGame().getResources().contains(Resource.WEAPONS) && model.getGame().allowMiliceElimination()){
                     if (PopupUtil.popupConfirm(view.getFrame(), "Shoot Milice?", "Do you want to shoot a Milice to clear the path to the Safe House?")){
                         model.getGame().setPhase(GamePhase.PERFORM_ACTIONS_SHOOT_MILICE);
                         // exit this method, which allows the player to click the agent again to perform the action
@@ -682,6 +688,15 @@ public class Controller {
                         .filter(l -> !l.getType().isSafeHouse() && !l.getAgents().isEmpty() && l.getAgents().stream().anyMatch(a -> a.isMovable()))
                         .count() > 0){
                     return;
+                }
+                // If Assassination Mission, ask to shoot milice before end of phase
+                if (model.getGame().getMission1() instanceof AssassinationMission || model.getGame().getMission2() instanceof AssassinationMission){
+                    if (model.getGame().allowMiliceElimination() && model.getGame().getSoldiers() < 5 && model.getGame().getResources().contains(Resource.WEAPONS)){
+                        if (PopupUtil.popupConfirm(view.getFrame(), "Assassination Mission", "Do you want to shoot a Milice?")){
+                            model.getGame().setPhase(GamePhase.PERFORM_ACTIONS_SHOOT_MILICE);
+                            return;
+                        }
+                    }
                 }
                 // Check end game
                 if (checkGameOver()){

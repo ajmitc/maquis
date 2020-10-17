@@ -19,14 +19,19 @@ public class LiberateTownMission extends Mission{
     }
 
     @Override
+    public void turnTeardown() {
+        super.turnTeardown();
+        if  (game.getTurn() == 15 && game.hasResources(Resource.WEAPONS, 3) && game.getMorale() >= 4){
+            completed = true;
+            PopupUtil.popupNotification(null, "Mission", getName() + " Completed");
+        }
+    }
+
+    @Override
     public void visitLocation(LocationType locationType) {
         super.visitLocation(locationType);
         if (completed) return;
         getMissionRequirements().get(0).setCompleted(game.hasResources(Resource.WEAPONS, 3));
         getMissionRequirements().get(1).setCompleted(game.getMorale() >= 4);
-        if  (game.getTurn() == 15 && game.hasResources(Resource.WEAPONS, 3) && game.getMorale() >= 4){
-            completed = true;
-            PopupUtil.popupNotification(null, "Mission", getName() + " Completed");
-        }
     }
 }

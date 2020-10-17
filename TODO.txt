@@ -1,8 +1,7 @@
 BUGS
-- Mission names are not centered
+- Spare room dialog still shows rooms already built
 
 FEATURES
-- If Assassination Mission in play, give player option to shoot milice at end of every turn
+- Mission names are not centered
 - Replace spare room images with better images
-- Replace road blocks with image
 - Replace blocked locations with nicer image

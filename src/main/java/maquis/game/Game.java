@@ -83,6 +83,8 @@ public class Game {
         // Setup the missions
         mission1.setup();
         mission2.setup();
+        mission1.turnSetup();
+        mission2.turnSetup();
     }
 
     public void restart(){
@@ -147,6 +149,10 @@ public class Game {
     public Agent getUnrecruitedAgent(){
         Optional<Agent> opt = agents.stream().filter(a -> !a.isRecruited()).findFirst();
         return opt.isPresent()? opt.get(): null;
+    }
+
+    public int countUnrecruitedAgents(){
+        return (int) agents.stream().filter(a -> !a.isRecruited()).count();
     }
 
     /**
