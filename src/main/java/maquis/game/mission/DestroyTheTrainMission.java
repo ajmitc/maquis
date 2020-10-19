@@ -2,6 +2,7 @@ package maquis.game.mission;
 
 import maquis.game.Game;
 import maquis.game.LocationType;
+import maquis.game.MissionLocation;
 import maquis.game.Resource;
 import maquis.view.PopupUtil;
 
@@ -21,7 +22,9 @@ public class DestroyTheTrainMission extends Mission{
     public void visitLocation(LocationType locationType) {
         super.visitLocation(locationType);
         if (completed) return;
-        if  (game.getTurn() >= 6 &&
+        MissionLocation missionLocation = (MissionLocation) game.getBoard().getLocationWithMission(this);
+        if  (missionLocation.getType() == locationType &&
+                game.getTurn() >= 6 &&
                 game.getTurn() <= 9 &&
                 game.getResources().stream().filter(r -> r == Resource.EXPLOSIVES).count() >= 3){
             game.getResources().remove(Resource.EXPLOSIVES);

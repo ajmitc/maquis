@@ -64,6 +64,15 @@ public class Controller {
                         view.refresh();
                     }
                 }
+                else if (view.getGamePanel().getBoardPanel().inNewGameActionArea(e.getX(), e.getY())){
+                    if (model.getGame().getPhase() == GamePhase.GAME_OVER || PopupUtil.popupConfirm(view.getFrame(), "New Game", "Are you sure you want to start a new game?")) {
+                        logger.info("Starting new game");
+                        model.setGame(new Game());
+                        view.showGame();
+                        view.refresh();
+                        run();
+                    }
+                }
             }
 
             @Override
@@ -809,7 +818,7 @@ public class Controller {
         if (model.getGame().getMission1().isCompleted() && model.getGame().getMission2().isCompleted()){
             // Game Over, player wins!
             model.getGame().setPhase(GamePhase.GAME_OVER);
-            PopupUtil.popupNotification(view.getFrame(), "Game Over", "You Win!");
+            PopupUtil.popupNotification(view.getFrame(), "Game Over", "You Win!\nThe German occupiers have decided you're not worth the trouble and moved on.\nYour town is liberated!");
             return true;
         }
         else if (model.getGame().getAgentsInPlay().size() == 0){

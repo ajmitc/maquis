@@ -18,23 +18,19 @@ public class MissionDetailPanel extends JPanel {
     private GridBagLayoutHelper gridBagLayoutHelper;
     private List<MissionRequirementPanel> missionRequirementPanelList = new ArrayList<>();
 
+    private JLabel lblDifficultyKey = new JLabel("Difficulty");
+    private JLabel lblDescriptionKey = new JLabel("Description");
+    private JLabel lblRequirementsKey = new JLabel("Completion");
+    private JLabel lblCompletedKey = new JLabel("Completed?");
+    private JPanel missionRequirementsPanel = new JPanel();
+
     public MissionDetailPanel() {
         super(new FlowLayout(FlowLayout.LEFT));
         setBorder(BorderFactory.createEmptyBorder(BoardPanel.MISSION_AREA_HEIGHT, 0, 0, 0));
-    }
 
-    public void init(Mission mission){
-        this.mission = mission;
-
-        //JLabel lblNameKey = new JLabel("Name");
-        //lblNameKey.setFont(ViewUtil.FORM_KEY_FONT);
-        JLabel lblDifficultyKey = new JLabel("Difficulty");
         lblDifficultyKey.setFont(ViewUtil.FORM_KEY_FONT);
-        JLabel lblDescriptionKey = new JLabel("Description");
         lblDescriptionKey.setFont(ViewUtil.FORM_KEY_FONT);
-        JLabel lblRequirementsKey = new JLabel("Completion");
         lblRequirementsKey.setFont(ViewUtil.FORM_KEY_FONT);
-        JLabel lblCompletedKey = new JLabel("Completed?");
         lblCompletedKey.setFont(ViewUtil.FORM_KEY_FONT);
 
         lblName = new JLabel();
@@ -59,20 +55,6 @@ public class MissionDetailPanel extends JPanel {
         lblCompleted = new JLabel();
         lblCompleted.setFont(ViewUtil.FORM_VALUE_FONT);
 
-        lblName.setText(mission.getName());
-        lblDifficulty.setText(mission.getDifficulty() == 1 ? "Normal" : "Hard");
-        lblDescription.setText(mission.getDescription());
-        lblRequirements.setText(mission.getCompletionRequirements());
-        lblCompleted.setText("No");
-
-        // Build Mission Requirements panel
-        JPanel missionRequirementsPanel = new JPanel(new GridLayout(this.mission.getMissionRequirements().size(), 1));
-        for (Mission.MissionRequirement missionRequirement: this.mission.getMissionRequirements()){
-            MissionRequirementPanel mrp = new MissionRequirementPanel(missionRequirement);
-            missionRequirementsPanel.add(mrp);
-            missionRequirementPanelList.add(mrp);
-        }
-
         gridBagLayoutHelper =
                 new GridBagLayoutHelper(this, true)
                         .setExternalPadding(0, 0, 10, 10)
@@ -86,6 +68,26 @@ public class MissionDetailPanel extends JPanel {
                         .setGridWidth(2).add(missionRequirementsPanel).resetGridWidth().nextRow()
                         .add(lblCompletedKey).add(lblCompleted).nextRow()
         ;
+    }
+
+    public void init(Mission mission){
+        this.mission = mission;
+
+        lblName.setText(mission.getName());
+        lblDifficulty.setText(mission.getDifficulty() == 1 ? "Normal" : "Hard");
+        lblDescription.setText(mission.getDescription());
+        lblRequirements.setText(mission.getCompletionRequirements());
+        lblCompleted.setText("No");
+
+        // Build Mission Requirements panel
+        missionRequirementsPanel.removeAll();
+        missionRequirementPanelList.clear();
+        missionRequirementsPanel.setLayout(new GridLayout(this.mission.getMissionRequirements().size(), 1));
+        for (Mission.MissionRequirement missionRequirement: this.mission.getMissionRequirements()){
+            MissionRequirementPanel mrp = new MissionRequirementPanel(missionRequirement);
+            missionRequirementsPanel.add(mrp);
+            missionRequirementPanelList.add(mrp);
+        }
     }
 
     public void refresh(){

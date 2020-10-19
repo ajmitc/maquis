@@ -68,7 +68,7 @@ public class Game {
         board.getLocation(LocationType.SAFE_HOUSE_1).setAgents(agents.subList(0, 3));
 
         // Draw two missions
-        mission1 = new TakeOutTheBridgesMission(this); //missionDeck.draw(Model.getProperty("game.setup.mission1.difficulty", 1));
+        mission1 = missionDeck.draw(Model.getProperty("game.setup.mission1.difficulty", 1));
         mission2 = missionDeck.draw(Model.getProperty("game.setup.mission2.difficulty", 2));
         List<Location> missionLocations = board.getLocationsWithTypes(LocationType.MISSION_1, LocationType.MISSION_2);
         ((MissionLocation) missionLocations.get(0)).setMission(mission1);
@@ -167,7 +167,7 @@ public class Game {
     }
 
     public boolean shouldDecreaseMoraleForTurn(){
-        return turn == 4 || turn == 7 || turn == 10 || turn == 13;
+        return turn == 3 || turn == 6 || turn == 9 || turn == 12;
     }
 
     public int getNumMiliceFromMorale(){
@@ -217,8 +217,8 @@ public class Game {
         this.turn = turn;
         if (this.turn < 1)
             this.turn = 1;
-        if (this.turn > 16)
-            this.turn = 16;
+        if (this.turn > 15)
+            this.turn = 15;
     }
 
     public int getMorale() {

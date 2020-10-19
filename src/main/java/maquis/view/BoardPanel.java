@@ -167,6 +167,10 @@ public class BoardPanel extends JPanel {
     private static final int RESTART_ICON_X = 1200 - RESTART_ICON_SIZE;
     private static final int RESTART_ICON_Y = MISSION_AREA_HEIGHT - RESTART_ICON_SIZE;
 
+    private static final int NEWGAME_ICON_SIZE = 40;
+    private static final int NEWGAME_ICON_X = 1150 - NEWGAME_ICON_SIZE;
+    private static final int NEWGAME_ICON_Y = MISSION_AREA_HEIGHT - NEWGAME_ICON_SIZE - 15;
+
 //    private static final int UNDO_ICON_GAP  = 10;
 //    private static final int UNDO_ICON_SIZE = 40;
 //    private static final int UNDO_ICON_X = 1200 - RESTART_ICON_SIZE - UNDO_ICON_SIZE - UNDO_ICON_GAP;
@@ -220,6 +224,11 @@ public class BoardPanel extends JPanel {
                 my >= RESTART_ICON_Y && my < RESTART_ICON_Y + RESTART_ICON_SIZE;
     }
 
+    public boolean inNewGameActionArea(int mx, int my){
+        return mx >= NEWGAME_ICON_X && mx < NEWGAME_ICON_X + NEWGAME_ICON_SIZE &&
+                my >= NEWGAME_ICON_Y && my < NEWGAME_ICON_Y + NEWGAME_ICON_SIZE;
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -252,6 +261,7 @@ public class BoardPanel extends JPanel {
 
         // Draw restart and undo icons
         drawRestartIcon(g2d);
+        drawNewGameIcon(g2d);
         //drawUndoIcon(g2d);
 
         // Draw Spare Rooms
@@ -374,7 +384,7 @@ public class BoardPanel extends JPanel {
     }
 
     private void drawTurnMarker(Graphics2D g){
-        Point p = TURN_SPACE_COORDS[model.getGame().getTurn() - 1];
+        Point p = TURN_SPACE_COORDS[model.getGame().getTurn()];
         g.setColor(TURN_MARKER_COLOR);
         //g.fillRoundRect(p.x, p.y, TURN_MARKER_SIZE, TURN_MARKER_SIZE, 5, 5);
         g.fill3DRect(p.x, p.y, TURN_MARKER_SIZE, TURN_MARKER_SIZE, true);
@@ -472,6 +482,10 @@ public class BoardPanel extends JPanel {
 
     private void drawRestartIcon(Graphics2D g){
         g.drawImage(ImageUtil.load("restart-icon.png", RESTART_ICON_SIZE), RESTART_ICON_X, RESTART_ICON_Y, null);
+    }
+
+    private void drawNewGameIcon(Graphics2D g){
+        g.drawImage(ImageUtil.load("cover2.png", NEWGAME_ICON_SIZE), NEWGAME_ICON_X, NEWGAME_ICON_Y, null);
     }
 
 //    private void drawUndoIcon(Graphics2D g){

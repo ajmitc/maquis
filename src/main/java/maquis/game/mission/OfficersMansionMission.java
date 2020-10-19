@@ -18,7 +18,7 @@ public class OfficersMansionMission extends Mission{
     private boolean visitedRueBaradat;
 
     public OfficersMansionMission(Game game){
-        super(game, "Officer's Mansion", 1, "The local commander has commandeered a fancy house north of town.   We need to make sure he knows that he will never has us cowed.", "Place an Agent on Rue Baradat, Pont Leveque, and Pont du Nord to write anti-fascist graffiti.  Once all three locations are tagged, place an Agent here to complete.");
+        super(game, "Officer's Mansion", 1, "The local commander has commandeered a fancy house north of town.   We need to make sure he knows that he will never has us cowed.", "Place an Agent on Rue Baradat, Pont Leveque, and Pont du Nord to write anti-fascist graffiti.  Once all three locations are tagged, place an Agent at the Mission Location to complete.");
         addMissionRequirement("Visit Rue Baradat");
         addMissionRequirement("Visit Pont Leveque");
         addMissionRequirement("Visit Pont du Nord");

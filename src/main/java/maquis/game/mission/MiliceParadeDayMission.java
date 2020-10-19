@@ -22,6 +22,11 @@ public class MiliceParadeDayMission extends Mission{
     }
 
     @Override
+    public boolean returnAgentToSafeHouse() {
+        return !PARADE_DAYS.contains(game.getTurn());
+    }
+
+    @Override
     public void turnSetup() {
         super.turnSetup();
         Road road = game.getBoard().getRoad(LocationType.RUE_BARADAT, LocationType.FENCE);
