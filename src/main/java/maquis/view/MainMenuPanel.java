@@ -1,11 +1,11 @@
 package maquis.view;
 
 import maquis.Model;
-import maquis.action.ExitGameAction;
-import maquis.action.NewGameAction;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class MainMenuPanel extends JPanel {
     private Model model;
@@ -22,8 +22,14 @@ public class MainMenuPanel extends JPanel {
         Image bi = ImageUtil.load("cover3.jpg");
         JLabel coverLabel = new JLabel(new ImageIcon(bi));
 
-        btnExit = new JButton(new ExitGameAction());
-        btnNewGame = new JButton(new NewGameAction(model, view));
+        btnExit = new JButton("Exit");
+        btnExit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+        btnNewGame = new JButton("New Game");
 
         JPanel buttonpanel = new JPanel();
         buttonpanel.setBorder(BorderFactory.createEmptyBorder(400, 100, 400, 100));
@@ -39,4 +45,6 @@ public class MainMenuPanel extends JPanel {
         add(coverLabel);
         add(buttonpanel);
     }
+
+    public JButton getBtnNewGame(){return btnNewGame;}
 }

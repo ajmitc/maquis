@@ -1,5 +1,6 @@
 package maquis.game.mission;
 
+import maquis.game.BlockedReason;
 import maquis.game.Game;
 import maquis.game.LocationType;
 import maquis.game.Resource;
@@ -60,10 +61,12 @@ public class TakeOutTheBridgesMission extends Mission{
             LocationType chosen = LocationType.fromName(choices.get(choice));
             if (chosen == LocationType.PONT_DU_NORD) {
                 armPontDuNordBridge = true;
+                game.discardResources(Resource.EXPLOSIVES, 2);
                 getMissionRequirements().get(0).setCompleted(true);
             }
             else {
                 armPoorDistrictBridge = true;
+                game.discardResources(Resource.EXPLOSIVES, 2);
                 getMissionRequirements().get(1).setCompleted(true);
             }
         }
@@ -77,12 +80,14 @@ public class TakeOutTheBridgesMission extends Mission{
             armPontDuNordBridge = false;
             pontDuNordBridgeDestroyed = true;
             game.getBoard().getRoad(LocationType.BLACK_MARKET, LocationType.PONT_DU_NORD).setBlocked(true);
+            game.getBoard().getRoad(LocationType.BLACK_MARKET, LocationType.PONT_DU_NORD).setBlockedReason(BlockedReason.DESTROYED);
             PopupUtil.popupNotification(null, "Bridge Destroyed!", LocationType.PONT_DU_NORD.getName() + " Destroyed!");
         }
         else if (armPoorDistrictBridge){
             armPoorDistrictBridge = false;
             poorDistrictBridgeDestroyed = true;
             game.getBoard().getRoad(LocationType.BLACK_MARKET, LocationType.POOR_DISTRICT).setBlocked(true);
+            game.getBoard().getRoad(LocationType.BLACK_MARKET, LocationType.POOR_DISTRICT).setBlockedReason(BlockedReason.DESTROYED);
             PopupUtil.popupNotification(null, "Bridge Destroyed!", LocationType.POOR_DISTRICT.getName() + " Destroyed!");
         }
         completed = poorDistrictBridgeDestroyed && pontDuNordBridgeDestroyed;

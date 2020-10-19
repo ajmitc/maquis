@@ -39,7 +39,7 @@ public class BoardPanel extends JPanel {
             new Point(735, 815 + MISSION_AREA_HEIGHT)
     };
     private static final int TURN_MARKER_SIZE = 25;
-    private static final Color TURN_MARKER_COLOR = Color.BLUE.brighter();
+    private static final Color TURN_MARKER_COLOR = Color.BLUE;
 
     private static final Point[] SOLDIER_SPACE_COORDS = {
             new Point(935, 815 + MISSION_AREA_HEIGHT),
@@ -112,8 +112,8 @@ public class BoardPanel extends JPanel {
     private static final Map<String, Point> ROAD_COORD = new HashMap<>();
     static {
         ROAD_COORD.put(LocationType.BLACK_MARKET.getName() + LocationType.GROCER.getName(), new Point(730, 470));
-        ROAD_COORD.put(LocationType.BLACK_MARKET.getName() + LocationType.PONT_DU_NORD.getName(), new Point(680, 285));
-        ROAD_COORD.put(LocationType.BLACK_MARKET.getName() + LocationType.POOR_DISTRICT.getName(), new Point(620, 370));
+        ROAD_COORD.put(LocationType.BLACK_MARKET.getName() + LocationType.PONT_DU_NORD.getName(), new Point(680, 275));
+        ROAD_COORD.put(LocationType.BLACK_MARKET.getName() + LocationType.POOR_DISTRICT.getName(), new Point(620, 360));
         ROAD_COORD.put(LocationType.BLACK_MARKET.getName() + LocationType.RADIO_B.getName(), new Point(810, 275));
         ROAD_COORD.put(LocationType.BLACK_MARKET.getName() + LocationType.SPARE_ROOM_2.getName(), new Point(850, 375));
 
@@ -379,7 +379,7 @@ public class BoardPanel extends JPanel {
         //g.fillRoundRect(p.x, p.y, TURN_MARKER_SIZE, TURN_MARKER_SIZE, 5, 5);
         g.fill3DRect(p.x, p.y, TURN_MARKER_SIZE, TURN_MARKER_SIZE, true);
 
-        g.setColor(Color.BLACK);
+        g.setColor(Color.WHITE);
         g.setFont(TURN_MARKER_FONT);
         g.drawString("" + model.getGame().getTurn(), p.x + (TURN_MARKER_SIZE / 2) - 4, p.y + (TURN_MARKER_SIZE / 2) + 5);
     }
@@ -450,19 +450,21 @@ public class BoardPanel extends JPanel {
             g.drawLine(p.x + LOCATION_SIZE, p.y, p.x, p.y + LOCATION_SIZE);
         });
 
-        Image barricade = ImageUtil.load("barricade3.png", 40);
         model.getGame().getBoard().getRoads().stream().filter(r -> r.isBlocked()).forEach(r -> {
             List<String> locTypes = Arrays.asList(r.getLocation1().getType().getName(), r.getLocation2().getType().getName());
             locTypes.sort(String::compareTo);
             Point p = ROAD_COORD.get(locTypes.get(0) + locTypes.get(1));
             //g.drawLine(p.x, p.y, p.x + ROAD_SIZE, p.y + ROAD_SIZE);
             //g.drawLine(p.x + ROAD_SIZE, p.y, p.x, p.y + ROAD_SIZE);
-            if (r.isParade()) {
-                g.drawImage(ImageUtil.load("parade2.jpg", 25), p.x - 5, p.y - 20, null);
-                g.drawImage(ImageUtil.load("parade2.jpg", 25), p.x + 20, p.y - 30, null);
+            if (r.getBlockedReason() == BlockedReason.PARADE) {
+                g.drawImage(ImageUtil.load(r.getBlockedReason().getIconFilename(), 25), p.x - 5, p.y - 20, null);
+                g.drawImage(ImageUtil.load(r.getBlockedReason().getIconFilename(), 25), p.x + 20, p.y - 30, null);
+            }
+            else if (r.getBlockedReason() == BlockedReason.DESTROYED){
+                g.drawImage(ImageUtil.load(r.getBlockedReason().getIconFilename(), 40), p.x, p.y, null);
             }
             else
-                g.drawImage(barricade, p.x, p.y, null);
+                g.drawImage(ImageUtil.load(r.getBlockedReason().getIconFilename(), 40), p.x, p.y, null);
         });
         g.setStroke(oldStroke);
         g.setColor(Color.BLACK);

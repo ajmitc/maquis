@@ -1,15 +1,12 @@
 package maquis.game;
 
 public enum GamePhase {
+    GAME_OVER("GAME OVER"),
+    SETUP("SETUP"),
     // Main Phases
     PLACE_AGENTS("PLACE AGENTS"),
     PERFORM_ACTIONS("PERFORM ACTIONS"),
-    NEXT_PHASE("Next Phase"),
-
-    // Subphases
-    START_SUBPHASES("NEVER SHOW THIS PHASE"),
-    PERFORM_ACTIONS_SHOOT_MILICE("SHOOT MILICE"),
-    GAME_OVER("GAME OVER");
+    END_TURN("Next Phase");
 
     private String name;
     GamePhase(String name){

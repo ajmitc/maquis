@@ -16,7 +16,8 @@ public class Game {
     public static final int GAME_OVER_TURN = 16;
 
     // Current game phase
-    private GamePhase phase = GamePhase.PLACE_AGENTS;
+    private GamePhase phase = GamePhase.SETUP;
+    private GamePhaseStep phaseStep = GamePhaseStep.START_PHASE;
 
     // Board holding state of game
     private Board board;
@@ -42,6 +43,9 @@ public class Game {
     // Some mission don't allow this until completed (ie. German Shepherds)
     private boolean allowMiliceElimination = true;
 
+    // Is the player allowed to peek at the top Patrol Card?
+    private boolean allowPeekTopPatrolCard = false;
+
     public Game(){
         missionDeck = new MissionDeck(this);
         init();
@@ -64,7 +68,7 @@ public class Game {
         board.getLocation(LocationType.SAFE_HOUSE_1).setAgents(agents.subList(0, 3));
 
         // Draw two missions
-        mission1 = missionDeck.draw(Model.getProperty("game.setup.mission1.difficulty", 1));
+        mission1 = new TakeOutTheBridgesMission(this); //missionDeck.draw(Model.getProperty("game.setup.mission1.difficulty", 1));
         mission2 = missionDeck.draw(Model.getProperty("game.setup.mission2.difficulty", 2));
         List<Location> missionLocations = board.getLocationsWithTypes(LocationType.MISSION_1, LocationType.MISSION_2);
         ((MissionLocation) missionLocations.get(0)).setMission(mission1);
@@ -78,7 +82,8 @@ public class Game {
         }
 
         // Set starting phase
-        phase = GamePhase.PLACE_AGENTS;
+        phase = GamePhase.SETUP;
+        phaseStep = GamePhaseStep.START_PHASE;
 
         // Setup the missions
         mission1.setup();
@@ -110,7 +115,8 @@ public class Game {
         resources.add(Resource.WEAPONS);
 
         // Set starting phase
-        phase = GamePhase.PLACE_AGENTS;
+        phase = GamePhase.SETUP;
+        phaseStep = GamePhaseStep.START_PHASE;
 
         // Restart the missions
         mission1.restart();
@@ -123,19 +129,15 @@ public class Game {
 
     public void setPhase(GamePhase phase) {
         this.phase = phase;
+        this.phaseStep = GamePhaseStep.START_PHASE;
     }
 
-    /**
-     * Call this method when the phase is over
-     */
-    public GamePhase endPhase(){
-        int ord = (phase.ordinal() + 1) % GamePhase.values().length;
-        phase = GamePhase.values()[ord];
-        // Don't enter subphases
-        if (phase == GamePhase.START_SUBPHASES)
-            phase = GamePhase.PLACE_AGENTS;
-        logger.info("Set phase to " + phase);
-        return phase;
+    public GamePhaseStep getPhaseStep() {
+        return phaseStep;
+    }
+
+    public void setPhaseStep(GamePhaseStep phaseStep) {
+        this.phaseStep = phaseStep;
     }
 
     public List<Agent> getAgentsInPlay(){
@@ -181,17 +183,17 @@ public class Game {
     public List<LocationType> getAvailableSpareRooms(){
         List<LocationType> locationTypes =
                 Arrays.asList(
+                        LocationType.CHEMISTS_LAB,
+                        LocationType.SMUGGLER,
                         LocationType.INFORMANT,
-                        LocationType.SAFE_HOUSE_2,
                         LocationType.PROPAGANDIST,
                         LocationType.COUNTERFEITER,
-                        LocationType.SMUGGLER,
-                        LocationType.CHEMISTS_LAB
+                        LocationType.SAFE_HOUSE_2
                         );
         // Look at all locations on board
         board.getLocations().stream()
                 // Extract the location types
-                .map(l -> l.getType())
+                .map(l -> l.getType().isSpareRoom()? l.getSpareRoomType(): l.getType())
                 // Only keep those in the spare room list above
                 .filter(lt -> locationTypes.contains(lt))
                 // Remove those location types
@@ -282,5 +284,13 @@ public class Game {
 
     public void setAllowMiliceElimination(boolean allowMiliceElimination) {
         this.allowMiliceElimination = allowMiliceElimination;
+    }
+
+    public boolean allowPeekTopPatrolCard() {
+        return allowPeekTopPatrolCard;
+    }
+
+    public void setAllowPeekTopPatrolCard(boolean allowPeekTopPatrolCard) {
+        this.allowPeekTopPatrolCard = allowPeekTopPatrolCard;
     }
 }

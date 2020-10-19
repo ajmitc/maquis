@@ -26,7 +26,15 @@ public class InfiltrationMission extends Mission{
 
     @Override
     public boolean returnAgentToSafeHouse() {
-        return completed;
+        Location missionLocation = game.getBoard().getLocationWithMission(this);
+        if (firstAgent != null && game.hasResources(Resource.WEAPONS, 1) && game.hasResources(Resource.EXPLOSIVES, 1) && missionLocation.getAgents().size() >= 2) {
+            // if I'm going to complete the mission this turn, return true
+            return true;
+        }
+        if (!completed && (firstAgent != null || game.hasResources(Resource.INTEL, 2)))
+            // If I just started the mission, return false
+            return false;
+        return true;
     }
 
     @Override
@@ -40,6 +48,7 @@ public class InfiltrationMission extends Mission{
                 game.discardResources(Resource.INTEL, 2);
                 getMissionRequirements().get(0).setCompleted(true);
                 getMissionRequirements().get(1).setCompleted(true);
+                game.setAllowPeekTopPatrolCard(true);
             }
             else if (firstAgent != null && game.hasResources(Resource.WEAPONS, 1) && game.hasResources(Resource.EXPLOSIVES, 1) && missionLocation.getAgents().size() >= 2) {
                 game.discardResources(Resource.WEAPONS, 1);
@@ -47,6 +56,7 @@ public class InfiltrationMission extends Mission{
                 completed = true;
                 getMissionRequirements().get(2).setCompleted(true);
                 PopupUtil.popupNotification(null, "Mission", getName() + " Completed");
+                game.setAllowPeekTopPatrolCard(false);
             }
         }
     }

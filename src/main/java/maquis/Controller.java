@@ -8,6 +8,8 @@ import maquis.view.View;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -23,16 +25,26 @@ public class Controller {
         this.model = model;
         this.view = view;
 
+        view.getMainMenuPanel().getBtnNewGame().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                model.setGame(new Game());
+                view.showGame();
+                view.refresh();
+                run();
+            }
+        });
+
         view.getGamePanel().getBoardPanel().addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mousePressed(e);
-                if (model.getGame().getPhase() == GamePhase.PERFORM_ACTIONS) {
+                if (model.getGame().getPhaseStep() == GamePhaseStep.PERFORM_ACTIONS) {
                     if (view.getGamePanel().getBoardPanel().inShootMiliceActionArea(e.getX(), e.getY())) {
                         if (model.getGame().allowMiliceElimination()) {
                             if (model.getGame().getResources().contains(Resource.WEAPONS) &&
                                     model.getGame().getBoard().getLocations().stream().anyMatch(l -> l.hasMilice())) {
-                                model.getGame().setPhase(GamePhase.PERFORM_ACTIONS_SHOOT_MILICE);
+                                model.getGame().setPhaseStep(GamePhaseStep.PERFORM_ACTIONS_SHOOT_MILICE);
                                 logger.info("Set phase to Shoot Milice");
                                 PopupUtil.popupNotification(view.getFrame(), "Shoot Milice", "Select a location with a Milice to shoot it");
                             } else {
@@ -57,7 +69,7 @@ public class Controller {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-                if (model.getGame().getPhase() == GamePhase.PLACE_AGENTS) {
+                if (model.getGame().getPhaseStep() == GamePhaseStep.PLACE_AGENTS) {
                     // Determine if we selected an Agent
                     for (Agent agent : model.getGame().getAgentsInPlay()) {
                         if (agent.isMovable() && agent.contains(e.getX(), e.getY())) {
@@ -72,7 +84,7 @@ public class Controller {
             @Override
             public void mouseReleased(MouseEvent e) {
                 super.mouseReleased(e);
-                if (model.getGame().getPhase() == GamePhase.PLACE_AGENTS) {
+                if (model.getGame().getPhaseStep() == GamePhaseStep.PLACE_AGENTS) {
                     // Deselect agent
                     for (Agent agent : model.getGame().getAgentsInPlay()) {
                         if (agent.isSelected()) {
@@ -98,16 +110,17 @@ public class Controller {
                             break;
                         }
                     }
-                } else if (model.getGame().getPhase() == GamePhase.PERFORM_ACTIONS) {
+                    run();
+                } else if (model.getGame().getPhaseStep() == GamePhaseStep.PERFORM_ACTIONS) {
                     Location location = view.getGamePanel().getBoardPanel().getLocationAt(e.getX(), e.getY());
                     logger.info("Performing Actions on " + location);
                     if (location != null) {
                         if (location.getAgents().isEmpty())
                             return;
                         performAction(location);
-                        checkEndPhase();
+                        run();
                     }
-                } else if (model.getGame().getPhase() == GamePhase.PERFORM_ACTIONS_SHOOT_MILICE) {
+                } else if (model.getGame().getPhaseStep() == GamePhaseStep.PERFORM_ACTIONS_SHOOT_MILICE) {
                     Location location = view.getGamePanel().getBoardPanel().getLocationAt(e.getX(), e.getY());
                     if (location.hasMilice()) {
                         model.getGame().getResources().remove(Resource.WEAPONS);
@@ -116,7 +129,14 @@ public class Controller {
                         model.getGame().setMorale(model.getGame().getMorale() - 1);
                         logger.info("Shot Milice!  -1 Weapons, +1 Soldiers, -1 Morale");
                         PopupUtil.popupNotification(view.getFrame(), "Shoot Milice", "Milice in " + location.getType() + " has been shot!  You throw away the weapon.  Soldier presence incrased, morale decreased!");
-                        model.getGame().setPhase(GamePhase.PERFORM_ACTIONS);
+                        model.getGame().setPhaseStep(GamePhaseStep.PERFORM_ACTIONS);
+                        run();
+                    }
+                    else {
+                        if (!PopupUtil.popupConfirm(view.getFrame(), "Shoot Milice", "Location does not have a Milice.  Do you still want to shoot a Milice?")) {
+                            model.getGame().setPhaseStep(GamePhaseStep.PERFORM_ACTIONS);
+                            run();
+                        }
                     }
                 }
             }
@@ -140,6 +160,147 @@ public class Controller {
                 }
             }
         });
+    }
+
+
+    public void run(){
+        while (true) {
+            switch (model.getGame().getPhase()) {
+                case SETUP:
+                    switch (model.getGame().getPhaseStep()){
+                        case START_PHASE:
+                            model.getGame().getMission1().setup();
+                            model.getGame().getMission2().setup();
+                            model.getGame().setPhaseStep(GamePhaseStep.END_PHASE);
+                            break;
+                        case END_PHASE:
+                            model.getGame().setPhase(GamePhase.PLACE_AGENTS);
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case PLACE_AGENTS: {
+                    switch (model.getGame().getPhaseStep()){
+                        case START_PHASE:
+                            PopupUtil.popupNotification(view.getFrame(), "Place Agents Phase", "Move Agents");
+                            if (model.getGame().allowPeekTopPatrolCard()) {
+                                Patrol patrol = model.getGame().getPatrolDeck().peek();
+                                PopupUtil.popupNotification(view.getFrame(), "Patrol Card", patrol.getLocation1() + "\nElse, " + patrol.getLocation2() + "\nElse, " + patrol.getLocation3());
+                            }
+                            model.getGame().setPhaseStep(GamePhaseStep.PLACE_AGENTS);
+                            break;
+                        case PLACE_AGENTS:
+                            for (Agent agent : model.getGame().getAgentsInPlay()) {
+                                if (agent.isMovable())
+                                    return;
+                            }
+                            model.getGame().setPhaseStep(GamePhaseStep.END_PHASE);
+                            break;
+                        case END_PHASE:
+                            // Set all Agents movable unless they are at a Mission Location that says they should not return to safe house
+                            model.getGame().getAgentsInPlay().stream().forEach(a -> {
+                                Location agentLocation = model.getGame().getBoard().getLocationWithAgent(a);
+                                if (agentLocation instanceof MissionLocation && !((MissionLocation) agentLocation).getMission().returnAgentToSafeHouse()) {
+                                    a.setMovable(false);
+                                } else
+                                    a.setMovable(true);
+                            });
+                            model.getGame().setPhase(GamePhase.PERFORM_ACTIONS);
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                }
+                case PERFORM_ACTIONS:
+                    switch (model.getGame().getPhaseStep()){
+                        case START_PHASE:
+                            PopupUtil.popupNotification(view.getFrame(), "Peform Actions Phase", "Click Agents to perform actions");
+                            model.getGame().setPhaseStep(GamePhaseStep.PERFORM_ACTIONS);
+                            break;
+                        case PERFORM_ACTIONS:
+                            if (model.getGame().getBoard().getLocations().stream()
+                                    .filter(l -> !l.getType().isSafeHouse() && !l.getAgents().isEmpty() && l.getAgents().stream().anyMatch(a -> a.isMovable()))
+                                    .count() > 0) {
+                                return;
+                            }
+                            model.getGame().setPhaseStep(GamePhaseStep.END_PHASE);
+                            break;
+                        case PERFORM_ACTIONS_SHOOT_MILICE:
+                            return;
+                        case END_PHASE:
+                            // Check for agents at mission locations that should not return to a safe house, but we still need to visit the location
+                            MissionLocation missionLocation1 = (MissionLocation) model.getGame().getBoard().getLocationWithMission(model.getGame().getMission1());
+                            MissionLocation missionLocation2 = (MissionLocation) model.getGame().getBoard().getLocationWithMission(model.getGame().getMission2());
+                            if (!missionLocation1.getAgents().isEmpty() && !model.getGame().getMission1().returnAgentToSafeHouse()) {
+                                model.getGame().getMission1().visitLocation(missionLocation1.getType());
+                            }
+                            if (!missionLocation2.getAgents().isEmpty() && !model.getGame().getMission2().returnAgentToSafeHouse()) {
+                                model.getGame().getMission2().visitLocation(missionLocation2.getType());
+                            }
+                            // If Assassination Mission, ask to shoot milice before end of phase
+                            if (model.getGame().getMission1() instanceof AssassinationMission || model.getGame().getMission2() instanceof AssassinationMission) {
+                                if (model.getGame().allowMiliceElimination() && model.getGame().getSoldiers() < 5 && model.getGame().getResources().contains(Resource.WEAPONS)) {
+                                    if (PopupUtil.popupConfirm(view.getFrame(), "Assassination Mission", "Do you want to shoot a Milice?")) {
+                                        model.getGame().setPhaseStep(GamePhaseStep.PERFORM_ACTIONS_SHOOT_MILICE);
+                                        return;
+                                    }
+                                }
+                            }
+                            // Check end game
+                            if (!checkGameOver()) {
+                                model.getGame().setPhase(GamePhase.END_TURN);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case END_TURN:
+                    switch (model.getGame().getPhaseStep()){
+                        case START_PHASE:
+                            // Let the mission update things
+                            model.getGame().getMission1().turnTeardown();
+                            model.getGame().getMission2().turnTeardown();
+
+                            // Increment turn and decrease morale if necessary
+                            model.getGame().setTurn(model.getGame().getTurn() + 1);
+                            if (model.getGame().shouldDecreaseMoraleForTurn()) {
+                                model.getGame().setMorale(model.getGame().getMorale() - 1);
+                            }
+
+                            // Remove milice and soldiers
+                            model.getGame().getBoard().getLocations().stream().forEach(l -> {
+                                l.setMilice(false);
+                                l.setSoldier(false);
+                            });
+
+                            // Allow all Agents in play at a Safe House to move again
+                            model.getGame().getAgentsInPlay().stream()
+                                    .filter(a -> model.getGame().getBoard().getLocationWithAgent(a).getType().isSafeHouse())
+                                    .forEach(a -> a.setMovable(true));
+
+                            // Let the mission update things
+                            model.getGame().getMission1().turnSetup();
+                            model.getGame().getMission2().turnSetup();
+                            view.refresh();
+                            model.getGame().setPhaseStep(GamePhaseStep.END_PHASE);
+                            break;
+                        case END_PHASE:
+                            if (!checkGameOver()) {
+                                model.getGame().setPhase(GamePhase.PLACE_AGENTS);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case GAME_OVER:
+                default:
+                    return;
+            }
+        }
     }
 
     public void placeMilice(){
@@ -211,7 +372,7 @@ public class Controller {
                 break;
         }
 
-        checkEndPhase();
+        run();
     }
 
     private boolean placeMiliceOrSoldier(LocationType locationType, boolean placeMilice, boolean arrestIfAgentFound){
@@ -281,7 +442,7 @@ public class Controller {
                 // If player has weapon and Milice blocking path, ask if they want to shoot milice, then return
                 if (hasMiliceInRoute && model.getGame().getResources().contains(Resource.WEAPONS) && model.getGame().allowMiliceElimination()){
                     if (PopupUtil.popupConfirm(view.getFrame(), "Shoot Milice?", "Do you want to shoot a Milice to clear the path to the Safe House?")){
-                        model.getGame().setPhase(GamePhase.PERFORM_ACTIONS_SHOOT_MILICE);
+                        model.getGame().setPhaseStep(GamePhaseStep.PERFORM_ACTIONS_SHOOT_MILICE);
                         // exit this method, which allows the player to click the agent again to perform the action
                         return;
                     }
@@ -296,8 +457,8 @@ public class Controller {
                 agent.setArrested(true);
                 agent.setMovable(false);
                 location.getAgents().remove(agent);
-                logger.info("Agent at " + location.getType() + " has been arrested!  No route to Safe House!");
-                PopupUtil.popupNotification(view.getFrame(), "Arrested!", "Agent at " + location.getType() + " has been arrested!");
+                logger.info("Agent at " + (location.getType().isSpareRoom()? location.getSpareRoomType(): location.getType()) + " has been arrested!  No route to Safe House!");
+                PopupUtil.popupNotification(view.getFrame(), "Arrested!", "Agent at " + (location.getType().isSpareRoom()? location.getSpareRoomType(): location.getType()) + " has been arrested!");
             }
         }
         // The mission says we can't go back to the safe house, so execute the location action if it's guaranteed
@@ -654,7 +815,7 @@ public class Controller {
         else if (model.getGame().getAgentsInPlay().size() == 0){
             // Game Over, player loses!
             model.getGame().setPhase(GamePhase.GAME_OVER);
-            PopupUtil.popupNotification(view.getFrame(), "Game Over", "You Lose!");
+            PopupUtil.popupNotification(view.getFrame(), "Game Over", "All Agents arrested.  Game Over!");
             return true;
         }
         else if (model.getGame().getTurn() == Game.GAME_OVER_TURN){
@@ -662,82 +823,11 @@ public class Controller {
             PopupUtil.popupNotification(view.getFrame(), "Game Over", "You failed to complete both missions.  Game Over!");
             return true;
         }
+        else if (model.getGame().getMorale() == 0){
+            model.getGame().setPhase(GamePhase.GAME_OVER);
+            PopupUtil.popupNotification(view.getFrame(), "Game Over", "Morale has reached 0.  Game Over!");
+            return true;
+        }
         return false;
-    }
-
-    public void checkEndPhase(){
-        switch(model.getGame().getPhase()){
-            case PLACE_AGENTS: {
-                for (Agent agent: model.getGame().getAgentsInPlay()){
-                    if (agent.isMovable())
-                        return;
-                }
-                // Set all Agents movable unless they are at a Mission Location that says they should not return to safe house
-                model.getGame().getAgentsInPlay().stream().forEach(a -> {
-                    Location agentLocation = model.getGame().getBoard().getLocationWithAgent(a);
-                    if (agentLocation instanceof MissionLocation && !((MissionLocation) agentLocation).getMission().returnAgentToSafeHouse()){
-                        a.setMovable(false);
-                    }
-                    else
-                        a.setMovable(true);
-                });
-                break;
-            }
-            case PERFORM_ACTIONS:
-                if (model.getGame().getBoard().getLocations().stream()
-                        .filter(l -> !l.getType().isSafeHouse() && !l.getAgents().isEmpty() && l.getAgents().stream().anyMatch(a -> a.isMovable()))
-                        .count() > 0){
-                    return;
-                }
-                // If Assassination Mission, ask to shoot milice before end of phase
-                if (model.getGame().getMission1() instanceof AssassinationMission || model.getGame().getMission2() instanceof AssassinationMission){
-                    if (model.getGame().allowMiliceElimination() && model.getGame().getSoldiers() < 5 && model.getGame().getResources().contains(Resource.WEAPONS)){
-                        if (PopupUtil.popupConfirm(view.getFrame(), "Assassination Mission", "Do you want to shoot a Milice?")){
-                            model.getGame().setPhase(GamePhase.PERFORM_ACTIONS_SHOOT_MILICE);
-                            return;
-                        }
-                    }
-                }
-                // Check end game
-                if (checkGameOver()){
-                    return;
-                }
-                break;
-            case NEXT_PHASE:
-                // Let the mission update things
-                model.getGame().getMission1().turnTeardown();
-                model.getGame().getMission2().turnTeardown();
-
-                // Increment turn and decrease morale if necessary
-                model.getGame().setTurn(model.getGame().getTurn() + 1);
-                if (model.getGame().shouldDecreaseMoraleForTurn()){
-                    model.getGame().setMorale(model.getGame().getMorale() - 1);
-                }
-
-                // Remove milice and soldiers
-                model.getGame().getBoard().getLocations().stream().forEach(l -> {l.setMilice(false); l.setSoldier(false);});
-
-                // Allow all Agents in play at a Safe House to move again
-                model.getGame().getAgentsInPlay().stream()
-                        .filter(a -> model.getGame().getBoard().getLocationWithAgent(a).getType().isSafeHouse())
-                        .forEach(a -> a.setMovable(true));
-
-                // Let the mission update things
-                model.getGame().getMission1().turnSetup();
-                model.getGame().getMission2().turnSetup();
-                view.refresh();
-                break;
-            default:
-                // If this is a sub-phase, don't change to the next phase
-                return;
-        }
-        // increment to the next main phase
-        model.getGame().endPhase();
-        if (checkGameOver()){
-            return;
-        }
-        PopupUtil.popupNotification(view.getFrame(), "New Phase", "Start " + model.getGame().getPhase() + " phase");
-        // If the next main phase is NEXT_PHASE, execute it here
-        checkEndPhase();
     }
 }

@@ -31,6 +31,12 @@ public class PatrolDeck {
         return patrol;
     }
 
+    public Patrol peek(){
+        if (patrols.isEmpty())
+            reshuffle();
+        return patrols.get(0);
+    }
+
     public void reshuffle(){
         patrols.addAll(discard);
         discard.clear();

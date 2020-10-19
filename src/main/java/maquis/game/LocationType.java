@@ -21,11 +21,11 @@ public enum LocationType {
     RUE_BARADAT("Rue Baradat"),
 
     // Spare Rooms
-    CHEMISTS_LAB("Chemist's Lab"), // Convert 1 Medicine into 1 Explosive
-    PROPAGANDIST("Propagandist"), // Gain 1 Morale
-    INFORMANT("Informant"), // Gain 1 Intel
-    COUNTERFEITER("Counterfeiter"), // Gain 1 Money
-    SMUGGLER("Smuggler"), // Gain 3 medicine or 3 food
+    CHEMISTS_LAB("<html><center>Chemist's Lab<br/>(Medicine -> Explosive)</center></html>"), // Convert 1 Medicine into 1 Explosive
+    PROPAGANDIST("<html><center>Propagandist<br/>(+1 Morale)</center></html>"), // Gain 1 Morale
+    INFORMANT("<html><center>Informant<br/>(+1 Intel)</center></html>"), // Gain 1 Intel
+    COUNTERFEITER("<html><center>Counterfeiter<br/>(+1 Money)</center></html>"), // Gain 1 Money
+    SMUGGLER("<html><center>Smuggler<br/>(+3 Medicine/Food)</center></html>"), // Gain 3 medicine or 3 food
 
     // Mission Locations
     MISSION_1("Mission 1"),

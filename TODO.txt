@@ -1,5 +1,4 @@
 BUGS
-- Spare room dialog still shows rooms already built
 
 FEATURES
 - Mission names are not centered

@@ -60,4 +60,8 @@ public class View {
     public GamePanel getGamePanel() {
         return gamePanel;
     }
+
+    public MainMenuPanel getMainMenuPanel() {
+        return mainMenuPanel;
+    }
 }
